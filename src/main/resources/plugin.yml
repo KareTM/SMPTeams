@@ -1,0 +1,16 @@
+name: SMPTeams
+version: '${project.version}'
+main: kare.smpteams.SMPTeams
+api-version: 1.19
+authors: [ Kare ]
+description: Adds Teams, Teamchats, replies and more.
+
+commands:
+  teamchat:
+    description: Toggles Team Cheat
+    usage: /<command>
+    aliases: [tc]
+  smpteams:
+    description: Main command for teams
+    usage: /<command> help
+    aliases: [teams,t]
