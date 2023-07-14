@@ -139,8 +139,7 @@ public final class SMPTeams extends JavaPlugin implements Listener, CommandExecu
             a = Audience.audience(e.viewers());
             msg = createPublicMessage(t, e.getPlayer(), e.message());
         }
-
-        a.sendMessage(e.getPlayer(), msg);
+        a.sendMessage(msg);
     }
 
     @EventHandler
@@ -149,7 +148,7 @@ public final class SMPTeams extends JavaPlugin implements Listener, CommandExecu
         var puid = p.getUniqueId();
         var t = getPlayerTeam(puid);
 
-        String team = "";
+        var team = "";
         if (t != null)
             team = "[" + t.name + "] ";
 
