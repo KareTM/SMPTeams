@@ -1,5 +1,7 @@
 package kare.smpteams;
 
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
@@ -13,6 +15,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.*;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -22,12 +25,14 @@ public final class SMPTeams extends JavaPlugin implements Listener, CommandExecu
     List<UUID> inTeamChat = new ArrayList<>();
     private static SMPTeams instance;
     private final Command commandInstance = new Command(this);
+    private static final Gson gson = new Gson();
 
     public static SMPTeams getInstance() {
         return instance;
     }
 
     File teamsFile = new File(getDataFolder(), "teams");
+    File teamsJSON = new File(getDataFolder(), "teams.json");
 
     @Override
     public void onEnable() {
@@ -41,7 +46,19 @@ public final class SMPTeams extends JavaPlugin implements Listener, CommandExecu
         getServer().getPluginManager().registerEvents(this, this);
         // Plugin startup logic
 
-        if (teamsFile.exists() && teamsFile.length() != 0) {
+        if (teamsJSON.exists() && teamsJSON.length() != 0) {
+            try {
+                var fis = new FileReader(teamsJSON);
+                var jsonReader = gson.newJsonReader(fis);
+
+                Type listType = new TypeToken<ArrayList<Teams>>(){}.getType();
+                teamsList = gson.fromJson(jsonReader, listType);
+
+                fis.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else if (teamsFile.exists() && teamsFile.length() != 0) {
             try {
                 var fis = new FileInputStream(teamsFile);
                 var ois = new ObjectInputStream(fis);
@@ -60,21 +77,21 @@ public final class SMPTeams extends JavaPlugin implements Listener, CommandExecu
 
     @Override
     public void onDisable() {
-        if (!teamsFile.exists()) {
+        if (!teamsJSON.exists()) {
             try {
-                teamsFile.createNewFile();
+                teamsJSON.createNewFile();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
 
         try {
-            var fos = new FileOutputStream(teamsFile);
-            var oos = new ObjectOutputStream(fos);
+            var fos = new FileOutputStream(teamsJSON);
+            var pw = new PrintWriter(fos);
 
-            oos.writeObject(teamsList);
+            pw.write(gson.toJson(teamsList));
 
-            oos.close();
+            pw.close();
             fos.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -104,7 +121,8 @@ public final class SMPTeams extends JavaPlugin implements Listener, CommandExecu
         return Component.text(sender)
                 .color(TextColor.color(t != null ? (int) t.color : 0xFFFFFF))
                 .append(Component.text(" » ", NamedTextColor.WHITE))
-                .append(message.color(NamedTextColor.BLUE));
+                .append(message.color(NamedTextColor.BLUE))
+                .clickEvent(message.clickEvent());
     }
 
     public Component createPublicMessage(Teams t, Player p, Component message) {
@@ -117,7 +135,8 @@ public final class SMPTeams extends JavaPlugin implements Listener, CommandExecu
         return Component.text(sender)
                 .color(TextColor.color(t != null ? (int) t.color : 0xFFFFFF))
                 .append(Component.text(" » ", NamedTextColor.WHITE))
-                .append(message.color(NamedTextColor.WHITE));
+                .append(message.color(NamedTextColor.WHITE))
+                .clickEvent(message.clickEvent());
     }
 
     @EventHandler

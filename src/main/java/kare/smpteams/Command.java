@@ -83,6 +83,14 @@ public class Command implements CommandExecutor {
 
                         String team = "[" + args[1] + "] ";
 
+                        for (Teams t : teamList) {
+                            if (t.name.equalsIgnoreCase(args[1])) {
+                                sender.sendMessage(Component.text("A Team with that name already exists.")
+                                        .color(NamedTextColor.RED));
+                                return true;
+                            }
+                        }
+
                         int color = Integer.decode(args[2]);
                         ((Player) sender).playerListName(Component.text(team + sender.getName()).color(TextColor.color(color)));
                         teamList.add(new Teams(p, args[1], Long.decode(args[2])));
@@ -119,6 +127,7 @@ public class Command implements CommandExecutor {
                     sender.sendMessage(Component.text("Aliases: /t, /teams, /smpteams").color(NamedTextColor.RED));
                     sender.sendMessage(Component.text("------------------------------").color(NamedTextColor.RED));
                     sender.sendMessage(Component.text("/t create <name> <hexcolor>").color(NamedTextColor.RED));
+                    sender.sendMessage(Component.text("/t color <hexcolor>").color(NamedTextColor.RED));
                     sender.sendMessage(Component.text("/t delete").color(NamedTextColor.RED));
                     sender.sendMessage(Component.text("/t help").color(NamedTextColor.RED));
                     sender.sendMessage(Component.text("/t invite <player>").color(NamedTextColor.RED));
@@ -176,7 +185,7 @@ public class Command implements CommandExecutor {
                         }
 
                         for (Teams team : teamList) {
-                            if (team.name.equals(args[1])) {
+                            if (team.name.equalsIgnoreCase(args[1])) {
                                 t = team;
                                 break;
                             }
@@ -392,6 +401,46 @@ public class Command implements CommandExecutor {
                             sender.sendMessage(Component.text("You forcefully disbanded " + args[1] + '.')
                                     .color(NamedTextColor.GREEN));
                             teamList.remove(t);
+                        }
+                    }
+                    return true;
+                case "color":
+                    if (args.length < 2) {
+                        sender.sendMessage(Component.text("Specify a new color. Format #000000")
+                                .color(NamedTextColor.RED));
+                    } else {
+                        if (!isValidHexaCode(args[1])) {
+                            sender.sendMessage(Component.text("Hex Code is invalid. Format: #00AAFF. Valid values [0-9] & [A-F].")
+                                    .color(NamedTextColor.RED));
+                            return true;
+                        }
+
+                        var p = ((Player) sender).getUniqueId();
+                        var t = plugin.getPlayerTeam(p);
+                        if (t == null) {
+                            sender.sendMessage(Component.text(notTeam)
+                                    .color(NamedTextColor.RED));
+                            return true;
+                        }
+
+                        if (!t.owner.equals(p.toString())) {
+                            sender.sendMessage(Component.text(noPerms)
+                                    .color(NamedTextColor.RED));
+                        } else {
+                            t.color = Long.decode(args[1]);
+                            String team = "[" + t.name + "] ";
+
+                            int color = (int) t.color;
+
+                            ((Player) sender).playerListName(Component.text(team + sender.getName()).color(TextColor.color(color)));
+
+                            t.players.forEach(m -> {
+                                var player = Bukkit.getPlayer(UUID.fromString(m));
+                                if (player != null && player.isOnline()) {
+
+                                    player.playerListName(Component.text(team + player.getName()).color(TextColor.color(color)));
+                                }
+                            });
                         }
                     }
                     return true;

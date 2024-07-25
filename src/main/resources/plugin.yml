@@ -1,7 +1,7 @@
 name: SMPTeams
 version: '${project.version}'
 main: kare.smpteams.SMPTeams
-api-version: 1.20
+api-version: 1.21
 authors: [ Kare ]
 description: Adds Teams, Teamchats, replies and more.
 

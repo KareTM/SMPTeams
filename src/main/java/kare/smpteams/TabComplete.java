@@ -26,6 +26,7 @@ public class TabComplete implements TabCompleter {
             arg.add("leave");
             arg.add("list");
             arg.add("perms");
+            arg.add("color");
 
             if(sender.isOp()) {
                 arg.add("reset");
