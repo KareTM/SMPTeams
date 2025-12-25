@@ -1,5 +1,6 @@
 package kare.smpteams;
 
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
@@ -7,9 +8,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 public class Command implements CommandExecutor {
@@ -460,8 +464,17 @@ public class Command implements CommandExecutor {
                         msg.append(s).append(" ");
                     }
 
+                    var toggled = SMPTeams.getInstance().getToggledTeamChat();
                     var message = Component.text(msg.toString());
-                    t.getAudience().sendMessage(SMPTeams.getInstance().createTeamMessage(t, (Player) sender, message));
+
+                    if (toggled.contains(p)) {
+                        var event = new AsyncPlayerChatEvent(false, Objects.requireNonNull(((Player) sender).getPlayer()), msg.toString(), Set.copyOf(sender.getServer().getOnlinePlayers()));
+                        event.setFormat("awoo<%1$s> %2$s");
+                        Bukkit.getPluginManager().callEvent(event);
+                        Audience.audience(sender.getServer().getOnlinePlayers()).sendMessage(SMPTeams.getInstance().createPublicMessage(t, (Player) sender, message));
+                    }
+                    else
+                        t.getAudience().sendMessage(SMPTeams.getInstance().createTeamMessage(t, (Player) sender, message));
                     return true;
                 }
 

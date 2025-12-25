@@ -10,7 +10,9 @@ import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -137,6 +139,13 @@ public final class SMPTeams extends JavaPlugin implements Listener, CommandExecu
                 .append(Component.text(" » ", NamedTextColor.WHITE))
                 .append(message.color(NamedTextColor.WHITE))
                 .clickEvent(message.clickEvent());
+    }
+
+   @EventHandler(priority = EventPriority.LOWEST)
+    public void a(AsyncPlayerChatEvent e) {
+        if (!e.isCancelled() && (inTeamChat.contains(e.getPlayer().getUniqueId()) && !e.getFormat().startsWith("awoo"))) {
+            e.setCancelled(true);
+        }
     }
 
     @EventHandler
